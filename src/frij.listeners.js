@@ -53,7 +53,7 @@ const Listeners = () =>{
 
     }
 
-    const addListener = (selector, listener, type="page")=>{
+    const addListener = (selector, listener, type="page", doc=document)=>{
 
         if(!listener.id){
             listener.id = `${new Date().getTime()}${Math.random()}`;
@@ -64,7 +64,7 @@ const Listeners = () =>{
             listener.selector = "store";
         } else {
             let item = selector;
-            if(typeof selector === "string") item = document.querySelector(selector);
+            if(typeof selector === "string") item = doc.querySelector(selector);
 
             item.addEventListener(listener.event, listener.callback);
             listener.selector=selector;

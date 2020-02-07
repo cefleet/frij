@@ -1,4 +1,4 @@
-import {addChildTo,htmlToTemplate, cloneElement} from "./frij.elements.js";
+import {addChildTo,htmlToTemplate, cloneElement,createElement} from "./frij.elements.js";
 
 export const loadComponents = (components,location,prefix) =>{
     if(!location){
@@ -30,7 +30,9 @@ export const createComponent = ({
     observedProps,
     onStateChanges,
     onCreate
-}, prefix) => {
+}, prefix, customStylesheet) => {
+    if(window.customElements.get(`${prefix ? prefix+"-":""}${name}`)) return true; //its already created
+
     class baseComponent extends HTMLElement {
         constructor() {
             super();
@@ -39,6 +41,11 @@ export const createComponent = ({
             this._shadowRoot = this.attachShadow({ 'mode': 'open' });
             let template = htmlToTemplate(html);
             addChildTo(cloneElement(template), this._shadowRoot);
+            if(customStylesheet){
+                let l = createElement("link", {type:"text/css", rel:"stylesheet", href:customStylesheet});
+                addChildTo(l,this._shadowRoot);  
+                this._state.customStylesheet = customStylesheet;              
+            }
             this._state.shadow = this._shadowRoot;
             onCreate ? onCreate(this, this._shadowRoot) : ""
         }
@@ -71,6 +78,10 @@ export const createComponent = ({
 
         _setState(name,value){
             this._state[name] = value;
+            
+            if(onStateChanges && typeof onStateChanges == "function"){
+                onStateChanges(name,this, this._shadowRoot);
+            }
         }
 
         get state(){
